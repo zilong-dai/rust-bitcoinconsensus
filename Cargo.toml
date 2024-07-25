@@ -1,37 +1,37 @@
 [package]
-name = "bitcoinconsensus"
-# The first part is the crate version, the second informational part is the Bitcoin Core version.
-version = "0.106.0+26.0"
-authors = ["Tamas Blummer <tamas.blummer@gmail.com>"]
+name = "dogecoinconsensus"
+# The first part is the crate version, the second informational part is the Dogecoin Core version.
+version = "0.106.0+1.14.7"
+authors = ["Longer Dai <longerfree.dai@gmail.com>"]
 license = "Apache-2.0"
-homepage = "https://github.com/rust-bitcoin/rust-bitcoinconsensus/"
-repository = "https://github.com/rust-bitcoin/rust-bitcoinconsensus/"
-description = "Bitcoin's libbitcoinconsensus with Rust binding."
-keywords = [ "bitcoin", "bitcoinconsensus", "libbitcoinconsensus" ]
+homepage = "https://github.com/rust-dogecoin/rust-dogecoinconsensus/"
+repository = "https://github.com/rust-dogecoin/rust-dogecoinconsensus/"
+description = "Dogecoin's libdogecoinconsensus with Rust binding."
+keywords = [ "dogecoin", "dogecoinconsensus", "libdogecoinconsensus" ]
 readme = "README.md"
 exclude = [
-        "/depend/bitcoin/.github/**",
-        "/depend/bitcoin/.tx/**",
-        "/depend/bitcoin/build-aux/**",
-        "/depend/bitcoin/contrib/**",
-        "/depend/bitcoin/depends/**",
-        "/depend/bitcoin/doc/**",
-        "/depend/bitcoin/share/**",
-        "/depend/bitcoin/test/**",
-        "/depend/bitcoin/src/bench/**",
-        "/depend/bitcoin/src/config/**",
-        "/depend/bitcoin/src/leveldb/**",
-        "/depend/bitcoin/src/policy/**",
-        "/depend/bitcoin/src/qt/**",
-        "/depend/bitcoin/src/rpc/**",
-        "/depend/bitcoin/src/support/**",
-        "/depend/bitcoin/src/test/**",
-        "/depend/bitcoin/src/univalue/**",
-        "/depend/bitcoin/src/wallet/**",
-        "/depend/bitcoin/src/zmq/**"
+        "/depend/dogecoin/.github/**",
+        "/depend/dogecoin/.tx/**",
+        "/depend/dogecoin/build-aux/**",
+        "/depend/dogecoin/contrib/**",
+        "/depend/dogecoin/depends/**",
+        "/depend/dogecoin/doc/**",
+        "/depend/dogecoin/share/**",
+        "/depend/dogecoin/test/**",
+        "/depend/dogecoin/src/bench/**",
+        "/depend/dogecoin/src/config/**",
+        "/depend/dogecoin/src/leveldb/**",
+        "/depend/dogecoin/src/policy/**",
+        "/depend/dogecoin/src/qt/**",
+        "/depend/dogecoin/src/rpc/**",
+        "/depend/dogecoin/src/support/**",
+        "/depend/dogecoin/src/test/**",
+        "/depend/dogecoin/src/univalue/**",
+        "/depend/dogecoin/src/wallet/**",
+        "/depend/dogecoin/src/zmq/**"
         ]
 build = "build.rs"
-edition = "2018"
+edition = "2021"
 
 [features]
 default = ["std"]

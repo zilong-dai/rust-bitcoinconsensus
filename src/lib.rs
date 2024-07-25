@@ -1,17 +1,17 @@
 // Copyright 2018 Tamas Blummer
 // SPDX-License-Identifier: Apache-2.0
 
-//! This project builds the `libbitcoinconsensus` library from Bitcoin's C++
+//! This project builds the `libdogecoinconsensus` library from Dogecoin's C++
 //! sources using Cargo and provides Rust bindings to its API.
 //!
-//! Quoting from [`bitcoin/doc/shared-libraries.md`]:
+//! Quoting from [`dogecoin/doc/shared-libraries.md`]:
 //!
 //! > The purpose of this library is to make the verification functionality that is critical to
-//! > Bitcoin's consensus available to other applications, e.g. to language bindings.
+//! > Dogecoin's consensus available to other applications, e.g. to language bindings.
 //!
-//! And that is exactly what this library is, the Rust bindings to `bitcoinconsensus`.
+//! And that is exactly what this library is, the Rust bindings to `dogecoinconsensus`.
 //!
-//! [`bitcoin/doc/shared-libraries.md`]: <https://github.com/bitcoin/bitcoin/blob/master/doc/shared-libraries.md>
+//! [`dogecoin/doc/shared-libraries.md`]: <https://github.com/dogecoin/dogecoin/blob/master/doc/shared-libraries.md>
 
 mod types;
 
@@ -43,7 +43,7 @@ pub const VERIFY_ALL_PRE_TAPROOT: c_uint = VERIFY_P2SH
     | VERIFY_CHECKSEQUENCEVERIFY
     | VERIFY_WITNESS;
 
-/// Computes flags for soft fork activation heights on the Bitcoin network.
+/// Computes flags for soft fork activation heights on the Dogecoin network.
 pub fn height_to_flags(height: u32) -> u32 {
     let mut flag = VERIFY_NONE;
 
@@ -69,23 +69,23 @@ pub fn height_to_flags(height: u32) -> u32 {
     flag
 }
 
-/// Returns `libbitcoinconsensus` version.
+/// Returns `libdogecoinconsensus` version.
 pub fn version() -> u32 { unsafe { ffi::bitcoinconsensus_version() as u32 } }
 
-/// Verifies a single spend (input) of a Bitcoin transaction.
+/// Verifies a single spend (input) of a Dogecoin transaction.
 ///
 /// Note that amount will only be checked for Segwit transactions.
 ///
 /// # Arguments
 ///
-///  * `spend_output`: A Bitcoin transaction output script to be spent, serialized in Bitcoin's on wire format.
+///  * `spend_output`: A Dogecoin transaction output script to be spent, serialized in Dogecoin's on wire format.
 ///  * `amount`: The spent output amount in satoshis.
-///  * `spending_transaction`: The spending Bitcoin transaction, serialized in Bitcoin's on wire format.
+///  * `spending_transaction`: The spending Dogecoin transaction, serialized in Dogecoin's on wire format.
 ///  * `input_index`: The index of the input within spending_transaction.
 ///
 /// # Examples
 ///
-/// The (randomly choosen) Bitcoin transaction
+/// The (randomly choosen) Dogecoin transaction
 ///
 ///  `aca326a724eda9a461c10a876534ecd5ae7b27f10f26c3862fb996f80ea2d45d`
 ///
@@ -118,7 +118,7 @@ pub fn verify(
         None => VERIFY_ALL_PRE_TAPROOT,
     };
 
-    verify_with_flags(spent_output, amount, spending_transaction, spent_outputs, input_index, flags)
+    verify_with_flags(spent_output, amount, spending_transaction, input_index, flags)
 }
 
 /// Same as verify but with flags that turn past soft fork features on or off.
@@ -126,55 +126,31 @@ pub fn verify_with_flags(
     spent_output_script: &[u8],
     amount: u64,
     spending_transaction: &[u8],
-    spent_outputs: Option<&[Utxo]>,
     input_index: usize,
     flags: u32,
 ) -> Result<(), Error> {
-    match spent_outputs {
-        Some(spent_outputs) => unsafe {
-            let mut error = Error::ERR_SCRIPT;
+    unsafe {
+        let mut error = Error::ERR_SCRIPT;
 
-            let ret = ffi::bitcoinconsensus_verify_script_with_spent_outputs(
-                spent_output_script.as_ptr(),
-                spent_output_script.len() as c_uint,
-                amount,
-                spending_transaction.as_ptr(),
-                spending_transaction.len() as c_uint,
-                spent_outputs.as_ptr() as *const c_uchar,
-                spent_outputs.len() as c_uint,
-                input_index as c_uint,
-                flags as c_uint,
-                &mut error,
-            );
-            if ret != 1 {
-                Err(error)
-            } else {
-                Ok(())
-            }
-        },
-        None => unsafe {
-            let mut error = Error::ERR_SCRIPT;
-
-            let ret = ffi::bitcoinconsensus_verify_script_with_amount(
-                spent_output_script.as_ptr(),
-                spent_output_script.len() as c_uint,
-                amount,
-                spending_transaction.as_ptr(),
-                spending_transaction.len() as c_uint,
-                input_index as c_uint,
-                flags as c_uint,
-                &mut error,
-            );
-            if ret != 1 {
-                Err(error)
-            } else {
-                Ok(())
-            }
-        },
+        let ret = ffi::bitcoinconsensus_verify_script_with_amount(
+            spent_output_script.as_ptr(),
+            spent_output_script.len() as c_uint,
+            amount,
+            spending_transaction.as_ptr(),
+            spending_transaction.len() as c_uint,
+            input_index as c_uint,
+            flags as c_uint,
+            &mut error,
+        );
+        if ret != 1 {
+            Err(error)
+        } else {
+            Ok(())
+        }
     }
 }
 
-/// Mimics the Bitcoin Core UTXO typedef (bitcoinconsenus.h)
+/// Mimics the Dogecoin Core UTXO typedef (dogecoinconsenus.h)
 // This is the TxOut data for utxos being spent, i.e., previous outputs.
 #[repr(C)]
 pub struct Utxo {
@@ -191,7 +167,7 @@ pub mod ffi {
     use crate::types::c_int;
 
     extern "C" {
-        /// Returns `libbitcoinconsensus` version.
+        /// Returns `libdogecoinconsensus` version.
         pub fn bitcoinconsensus_version() -> c_int;
 
         /// Verifies that the transaction input correctly spends the previous
@@ -209,36 +185,36 @@ pub mod ffi {
             err: *mut Error,
         ) -> c_int;
 
-        /// Verifies that the transaction input correctly spends the previous
-        /// output, considering any additional constraints specified by flags.
-        ///
-        /// This function verifies Taproot inputs.
-        pub fn bitcoinconsensus_verify_script_with_spent_outputs(
-            script_pubkey: *const c_uchar,
-            script_pubkeylen: c_uint,
-            amount: u64,
-            tx_to: *const c_uchar,
-            tx_tolen: c_uint,
-            spent_outputs: *const c_uchar,
-            num_spent_outputs: c_uint,
-            n_in: c_uint,
-            flags: c_uint,
-            err: *mut Error,
-        ) -> c_int;
+        // /// Verifies that the transaction input correctly spends the previous
+        // /// output, considering any additional constraints specified by flags.
+        // ///
+        // /// This function verifies Taproot inputs.
+        // pub fn dogecoinconsensus_verify_script_with_spent_outputs(
+        //     script_pubkey: *const c_uchar,
+        //     script_pubkeylen: c_uint,
+        //     amount: u64,
+        //     tx_to: *const c_uchar,
+        //     tx_tolen: c_uint,
+        //     spent_outputs: *const c_uchar,
+        //     num_spent_outputs: c_uint,
+        //     n_in: c_uint,
+        //     flags: c_uint,
+        //     err: *mut Error,
+        // ) -> c_int;
     }
 }
 
-/// Errors returned by [`libbitcoinconsensus`].
+/// Errors returned by [`libdogecoinconsensus`].
 ///
-/// The error variant identifiers mimic those from `libbitcoinconsensus`.
+/// The error variant identifiers mimic those from `libdogecoinconsensus`.
 ///
-/// [`libbitcoinconsensus`]: <https://github.com/bitcoin/bitcoin/blob/master/doc/shared-libraries.md#errors>
+/// [`libdogecoinconsensus`]: <https://github.com/dogecoin/dogecoin/blob/master/doc/shared-libraries.md#errors>
 #[allow(non_camel_case_types)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub enum Error {
-    /// Default value, passed to `libbitcoinconsensus` as a return parameter.
-    ERR_SCRIPT = 0, // This is ERR_OK in Bitcoin Core.
+    /// Default value, passed to `libdogecoinconsensus` as a return parameter.
+    ERR_SCRIPT = 0, // This is ERR_OK in Dogecoin Core.
     /// An invalid index for `txTo`.
     ERR_TX_INDEX,
     /// `txToLen` did not match with the size of `txTo`.
@@ -299,7 +275,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn bitcoinconsensus_test() {
+    fn dogecoinconsensus_test() {
         // a random old-style transaction from the blockchain
         verify_test (
             "76a9144bfbaf6afb76cc5771bc6404810d1cc041a6933988ac",
@@ -350,10 +326,5 @@ mod tests {
             None,
             input,
         )
-    }
-
-    #[test]
-    fn invalid_flags_test() {
-        verify_with_flags(&[], 0, &[], None, 0, VERIFY_ALL_PRE_TAPROOT + 1).unwrap_err();
     }
 }

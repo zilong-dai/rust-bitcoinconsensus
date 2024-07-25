@@ -21,7 +21,7 @@ fn main() {
     let is_big_endian = env::var("CARGO_CFG_TARGET_ENDIAN").expect("No endian is set") == "big";
     let mut base_config = cc::Build::new();
     base_config
-        .include("depend/bitcoin/src/secp256k1/include")
+        .include("depend/dogecoin/src/secp256k1/include")
         .define("__STDC_FORMAT_MACROS", None)
         .flag_if_supported("-Wno-implicit-fallthrough");
 
@@ -35,8 +35,8 @@ fn main() {
     // **Secp256k1**
     if !cfg!(feature = "external-secp") {
         secp_config
-            .include("depend/bitcoin/src/secp256k1/include")
-            .include("depend/bitcoin/src/secp256k1/src")
+            .include("depend/dogecoin/src/secp256k1/include")
+            .include("depend/dogecoin/src/secp256k1/src")
             .flag_if_supported("-Wno-unused-function") // some ecmult stuff is defined but not used upstream
             .define("ECMULT_WINDOW_SIZE", "15")
             .define("ECMULT_GEN_PREC_BITS", "4")
@@ -46,9 +46,9 @@ fn main() {
             // `pubkey.cpp` does.
             .define("ENABLE_MODULE_ELLSWIFT", "1")
             .define("ENABLE_MODULE_RECOVERY", "1")
-            .file("depend/bitcoin/src/secp256k1/src/precomputed_ecmult_gen.c")
-            .file("depend/bitcoin/src/secp256k1/src/precomputed_ecmult.c")
-            .file("depend/bitcoin/src/secp256k1/src/secp256k1.c");
+            .file("depend/dogecoin/src/secp256k1/src/precomputed_ecmult_gen.c")
+            .file("depend/dogecoin/src/secp256k1/src/precomputed_ecmult.c")
+            .file("depend/dogecoin/src/secp256k1/src/secp256k1.c");
 
         if is_big_endian {
             secp_config.define("WORDS_BIGENDIAN", "1");
@@ -75,21 +75,44 @@ fn main() {
 
     consensus_config
         .cpp(true)
-        .include("depend/bitcoin/src")
-        .include("depend/bitcoin/src/secp256k1/include")
-        .file("depend/bitcoin/src/util/strencodings.cpp")
-        .file("depend/bitcoin/src/uint256.cpp")
-        .file("depend/bitcoin/src/pubkey.cpp")
-        .file("depend/bitcoin/src/hash.cpp")
-        .file("depend/bitcoin/src/primitives/transaction.cpp")
-        .file("depend/bitcoin/src/crypto/ripemd160.cpp")
-        .file("depend/bitcoin/src/crypto/sha1.cpp")
-        .file("depend/bitcoin/src/crypto/sha256.cpp")
-        .file("depend/bitcoin/src/crypto/sha512.cpp")
-        .file("depend/bitcoin/src/crypto/hmac_sha512.cpp")
-        .file("depend/bitcoin/src/script/bitcoinconsensus.cpp")
-        .file("depend/bitcoin/src/script/interpreter.cpp")
-        .file("depend/bitcoin/src/script/script.cpp")
-        .file("depend/bitcoin/src/script/script_error.cpp")
-        .compile("libbitcoinconsensus.a");
+        .define("HAVE_CONFIG_H", "1")
+        .include("depend/dogecoin/src")
+        .include("depend/dogecoin/src/obj")
+        .include("depend/dogecoin/src/secp256k1/include")
+        .include("depend/dogecoin/src/consensus")
+        .include("depend/dogecoin/src/crypto")
+        .include("depend/dogecoin/src/primitives")
+        .include("depend/dogecoin/src/script")
+        .include("depend/dogecoin/src/config")
+
+        .file("depend/dogecoin/src/crypto/aes.cpp")
+        .file("depend/dogecoin/src/crypto/hmac_sha256.cpp")
+        .file("depend/dogecoin/src/crypto/hmac_sha512.cpp")
+        .file("depend/dogecoin/src/crypto/ripemd160.cpp")
+        .file("depend/dogecoin/src/crypto/scrypt.cpp")
+        .file("depend/dogecoin/src/crypto/sha1.cpp")
+        .file("depend/dogecoin/src/crypto/sha256.cpp")
+        .file("depend/dogecoin/src/crypto/sha512.cpp")
+
+        .file("depend/dogecoin/src/arith_uint256.cpp")
+
+        .file("depend/dogecoin/src/consensus/merkle.cpp")
+
+        .file("depend/dogecoin/src/hash.cpp")
+
+        .file("depend/dogecoin/src/primitives/block.cpp")
+        .file("depend/dogecoin/src/primitives/pureheader.cpp")
+        .file("depend/dogecoin/src/primitives/transaction.cpp")
+
+        .file("depend/dogecoin/src/pubkey.cpp")
+
+        .file("depend/dogecoin/src/script/bitcoinconsensus.cpp")
+        .file("depend/dogecoin/src/script/interpreter.cpp")
+        .file("depend/dogecoin/src/script/script.cpp")
+        .file("depend/dogecoin/src/script/script_error.cpp")
+
+        .file("depend/dogecoin/src/uint256.cpp")
+        .file("depend/dogecoin/src/utilstrencodings.cpp")
+
+        .compile("libdogecoinconsensus.a");
 }

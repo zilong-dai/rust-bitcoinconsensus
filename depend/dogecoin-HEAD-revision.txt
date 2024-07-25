@@ -1,0 +1,2 @@
+# This file was automatically created by vendor-dogecoin-core.sh
+a6d12201363b0eb4ccf854b609fc6e98958b1443

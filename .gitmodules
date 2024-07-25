@@ -1,0 +1,3 @@
+[submodule "depend/dogecoin"]
+	path = depend/dogecoin
+	url = https://github.com/dogecoin/dogecoin.git
